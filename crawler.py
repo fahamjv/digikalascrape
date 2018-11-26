@@ -3,10 +3,13 @@ import csv,os,json
 import requests
 from lxml import etree
 from time import sleep
+from bs4 import BeautifulSoup
+import re
 
 def AmzonParser(url):
     headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36'}
     page = requests.get(url,headers=headers)
+
 
     while True:
         try:
@@ -27,6 +30,7 @@ def AmzonParser(url):
             RAw_DISCOUNT = doc.xpath(XPATH_DISCOUNT)
             RAw_SELLER = doc.xpath(XPATH_SELLER)
 
+
             NAME = ' '.join(''.join(RAW_NAME).split()) if RAW_NAME else None
             EN_NAME = ' '.join(''.join(RAW_EN_NAME).split()) if RAW_EN_NAME else None
             SALE_PRICE = ' '.join(''.join(RAW_SALE_PRICE).split()).strip() if RAW_SALE_PRICE else None
@@ -34,6 +38,7 @@ def AmzonParser(url):
             ORIGINAL_PRICE = ''.join(RAW_ORIGINAL_PRICE).strip() if RAW_ORIGINAL_PRICE else None
             DISCOUNT = ''.join(RAw_DISCOUNT).strip() if RAw_DISCOUNT else None
             SELLER = ''.join(RAw_SELLER).strip() if RAw_SELLER else None
+            INFO = BeautifulSoup(page.text,"lxml").body.find('div', attrs={'class':'p-tabs'})
 
             if not ORIGINAL_PRICE:
                 ORIGINAL_PRICE = SALE_PRICE
@@ -53,6 +58,7 @@ def AmzonParser(url):
                     'ORIGINAL_PRICE':ORIGINAL_PRICE,
                     'DISCOUNT':DISCOUNT,
                     'SELLER':SELLER,
+                    'INFO':re.sub('\n','',str(INFO)),
                     'URL':url,
                     }
 
